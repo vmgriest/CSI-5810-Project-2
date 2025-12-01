@@ -3,8 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CSI 5810 - Text Mining Project</title>
+    <title>Sentiment Analyzer | CSI 5810</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --secondary: #7209b7;
+            --accent: #f72585;
+            --success: #4cc9f0;
+            --warning: #f8961e;
+            --danger: #f94144;
+            --light: #f8f9fa;
+            --dark: #212529;
+            --gray: #6c757d;
+            --gray-light: #e9ecef;
+            --border-radius: 12px;
+            --box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            --box-shadow-hover: 0 15px 40px rgba(0, 0, 0, 0.12);
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,289 +31,373 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            color: var(--dark);
+            line-height: 1.6;
             min-height: 100vh;
             padding: 20px;
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
         .header {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--box-shadow);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-left: 5px solid var(--primary);
+        }
+
+        .header-content h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-content h1 i {
+            color: var(--secondary);
+        }
+
+        .header-content p {
+            color: var(--gray);
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-tag {
+            display: inline-block;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 20px;
+            background: var(--gray-light);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            min-width: 300px;
+        }
+
+        .stat-item {
             text-align: center;
-            margin-bottom: 30px;
         }
 
-        .header h1 {
-            color: #667eea;
-            font-size: 2.5em;
-            margin-bottom: 10px;
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary);
         }
 
-        .header p {
-            color: #666;
-            font-size: 1.1em;
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--gray);
+            margin-top: 5px;
         }
 
-        .main-content {
+        .main-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: repeat(12, 1fr);
+            gap: 24px;
             margin-bottom: 30px;
         }
 
         .card {
             background: white;
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-radius: var(--border-radius);
+            padding: 1.8rem;
+            box-shadow: var(--box-shadow);
+            transition: var(--transition);
+            border-top: 4px solid var(--primary);
+            height: 100%;
         }
 
-        .card h2 {
-            color: #667eea;
-            margin-bottom: 20px;
-            font-size: 1.8em;
-            border-bottom: 3px solid #667eea;
-            padding-bottom: 10px;
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--box-shadow-hover);
         }
 
-        .upload-section {
-            border: 3px dashed #667eea;
-            padding: 40px;
-            text-align: center;
-            border-radius: 10px;
-            background: #f8f9ff;
-            transition: all 0.3s;
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--gray-light);
         }
 
-        .upload-section:hover {
-            background: #eef0ff;
-            border-color: #764ba2;
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        .upload-section input[type="file"] {
-            display: none;
-        }
-
-        .upload-label {
-            display: inline-block;
-            padding: 15px 30px;
-            background: #667eea;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s;
-        }
-
-        .upload-label:hover {
-            background: #764ba2;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        .card-title i {
+            color: var(--secondary);
         }
 
         .btn {
-            padding: 12px 30px;
-            background: #667eea;
-            color: white;
+            padding: 12px 28px;
             border: none;
             border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            font-size: 1em;
-            font-weight: bold;
-            transition: all 0.3s;
-            margin: 5px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        .btn:hover {
-            background: #764ba2;
+        .btn-primary {
+            background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(45deg, var(--primary-dark), var(--primary));
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-            transform: none;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
         }
 
         .btn-secondary {
-            background: #48bb78;
+            background: linear-gradient(45deg, var(--secondary), #5a0a8f);
+            color: white;
         }
 
         .btn-secondary:hover {
-            background: #38a169;
+            background: linear-gradient(45deg, #5a0a8f, var(--secondary));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(114, 9, 183, 0.3);
+        }
+
+        .btn-accent {
+            background: linear-gradient(45deg, var(--accent), #d9048f);
+            color: white;
+        }
+
+        .btn-accent:hover {
+            background: linear-gradient(45deg, #d9048f, var(--accent));
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 37, 133, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none !important;
+            box-shadow: none !important;
+        }
+
+        .btn-full {
+            width: 100%;
+        }
+
+        .data-loading-card {
+            grid-column: span 4;
+        }
+
+        .file-info {
+            background: var(--gray-light);
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .file-name {
+            font-size: 1.1rem;
+            color: var(--dark);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .file-path {
+            font-size: 0.85rem;
+            color: var(--gray);
+            font-family: 'Courier New', monospace;
+        }
+
+        .stats-card {
+            grid-column: span 8;
         }
 
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 1rem;
         }
 
         .stat-box {
-            background: #f8f9ff;
-            padding: 20px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
             border-radius: 10px;
+            padding: 1.2rem;
             text-align: center;
-            border: 2px solid #667eea;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: var(--transition);
         }
 
-        .stat-box .number {
-            font-size: 2em;
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .stat-box .label {
-            color: #666;
-            margin-top: 5px;
-        }
-
-        .predict-section {
-            margin-top: 20px;
-        }
-
-        .predict-section textarea {
-            width: 100%;
-            padding: 15px;
-            border: 2px solid #667eea;
-            border-radius: 8px;
-            font-size: 1em;
-            font-family: inherit;
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .results-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .result-card {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #667eea;
-        }
-
-        .result-card h3 {
-            color: #667eea;
-            margin-bottom: 10px;
-        }
-
-        .result-card .metric {
-            display: flex;
-            justify-content: space-between;
-            margin: 8px 0;
-            padding: 5px;
-        }
-
-        .result-card .metric-name {
-            color: #666;
-        }
-
-        .result-card .metric-value {
-            font-weight: bold;
-            color: #667eea;
-        }
-
-        .prediction-result {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 15px;
-            border: 2px solid #667eea;
-        }
-
-        .sentiment-positive {
-            color: #48bb78;
-            font-weight: bold;
-        }
-
-        .sentiment-negative {
-            color: #f56565;
-            font-weight: bold;
-        }
-
-        .full-width {
-            grid-column: 1 / -1;
-        }
-
-        .visualization-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .viz-card {
-            background: #f8f9ff;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-        .viz-card img {
-            max-width: 100%;
-            border-radius: 8px;
+        .stat-box:hover {
+            transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
 
-        .viz-card h3 {
-            color: #667eea;
-            margin-bottom: 15px;
+        .stat-box .value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+
+        .stat-box .label {
+            font-size: 0.9rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .training-card {
+            grid-column: span 6;
+        }
+
+        .results-card {
+            grid-column: span 6;
+        }
+
+        .prediction-card {
+            grid-column: span 12;
+        }
+
+        .prediction-input {
+            width: 100%;
+            padding: 1.2rem;
+            border: 2px solid var(--gray-light);
+            border-radius: 10px;
+            font-size: 1rem;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 140px;
+            margin-bottom: 1.2rem;
+            transition: var(--transition);
+        }
+
+        .prediction-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+        }
+
+        .prediction-results {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .prediction-item {
+            background: var(--gray-light);
+            border-radius: 10px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .prediction-model {
+            font-size: 0.9rem;
+            color: var(--gray);
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .prediction-sentiment {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .prediction-confidence {
+            font-size: 0.85rem;
+            color: var(--gray);
+        }
+
+        .visualizations-card {
+            grid-column: span 8;
+        }
+
+        .features-card {
+            grid-column: span 4;
         }
 
         .alert {
-            padding: 15px;
-            border-radius: 8px;
-            margin: 15px 0;
-            font-weight: bold;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            margin: 1rem 0;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(-10px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
 
         .alert-success {
-            background: #c6f6d5;
-            color: #22543d;
-            border: 2px solid #48bb78;
+            background: rgba(76, 201, 240, 0.1);
+            color: #0d6efd;
+            border-left: 4px solid #4cc9f0;
         }
 
         .alert-error {
-            background: #fed7d7;
-            color: #742a2a;
-            border: 2px solid #f56565;
+            background: rgba(249, 65, 68, 0.1);
+            color: var(--danger);
+            border-left: 4px solid var(--danger);
         }
 
         .alert-info {
-            background: #bee3f8;
-            color: #2c5282;
-            border: 2px solid #4299e1;
+            background: rgba(248, 150, 30, 0.1);
+            color: var(--warning);
+            border-left: 4px solid var(--warning);
         }
 
         .loading {
             display: none;
             text-align: center;
-            padding: 20px;
+            padding: 2rem;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #667eea;
+            width: 50px;
+            height: 50px;
+            border: 4px solid var(--gray-light);
+            border-top: 4px solid var(--primary);
             border-radius: 50%;
-            width: 40px;
-            height: 40px;
             animation: spin 1s linear infinite;
-            margin: 0 auto;
+            margin: 0 auto 1rem;
         }
 
         @keyframes spin {
@@ -302,202 +405,506 @@
             100% { transform: rotate(360deg); }
         }
 
+        .model-results {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-top: 1.5rem;
+        }
+
+        .model-card {
+            background: var(--gray-light);
+            border-radius: 10px;
+            padding: 1.2rem;
+        }
+
+        .model-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(67, 97, 238, 0.2);
+        }
+
+        .model-metric {
+            display: flex;
+            justify-content: space-between;
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+
+        .metric-name {
+            color: var(--gray);
+        }
+
+        .metric-value {
+            font-weight: 600;
+            color: var(--primary);
+        }
+
         .feature-list {
             max-height: 400px;
             overflow-y: auto;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
 
         .feature-item {
             display: flex;
             justify-content: space-between;
-            padding: 10px;
-            margin: 5px 0;
+            padding: 12px 15px;
+            margin: 8px 0;
             background: white;
-            border-radius: 5px;
-            border-left: 4px solid #667eea;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+
+        .feature-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
 
         .feature-item.negative {
-            border-left-color: #f56565;
+            border-left-color: var(--danger);
         }
 
-        @media (max-width: 1024px) {
-            .main-content {
+        .feature-word {
+            font-weight: 600;
+        }
+
+        .feature-importance {
+            font-weight: 700;
+        }
+
+        .feature-item.positive .feature-importance {
+            color: var(--success);
+        }
+
+        .feature-item.negative .feature-importance {
+            color: var(--danger);
+        }
+
+        .viz-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            margin-top: 1.5rem;
+        }
+
+        .viz-item {
+            background: white;
+            border-radius: 10px;
+            padding: 1.2rem;
+            border: 1px solid var(--gray-light);
+        }
+
+        .viz-item.full {
+            grid-column: span 2;
+        }
+
+        .viz-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--dark);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .viz-image {
+            width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+
+        .footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: repeat(6, 1fr);
+            }
+            
+            .data-loading-card,
+            .training-card,
+            .results-card {
+                grid-column: span 3;
+            }
+            
+            .stats-card,
+            .visualizations-card {
+                grid-column: span 6;
+            }
+            
+            .prediction-card {
+                grid-column: span 6;
+            }
+            
+            .features-card {
+                grid-column: span 6;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .prediction-results {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 1.5rem;
+            }
+            
+            .header-stats {
+                width: 100%;
+            }
+            
+            .main-grid {
                 grid-template-columns: 1fr;
             }
-            .visualization-grid {
+            
+            .data-loading-card,
+            .stats-card,
+            .training-card,
+            .results-card,
+            .prediction-card,
+            .visualizations-card,
+            .features-card {
+                grid-column: span 1;
+            }
+            
+            .stats-grid {
                 grid-template-columns: 1fr;
+            }
+            
+            .model-results {
+                grid-template-columns: 1fr;
+            }
+            
+            .prediction-results {
+                grid-template-columns: 1fr;
+            }
+            
+            .viz-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .viz-item.full {
+                grid-column: span 1;
             }
         }
     </style>
 </head>
-<body>
+<body data-auto-loaded="{{ auto_loaded|tojson }}" data-initial-stats='{{ initial_stats|tojson }}'>
     <div class="container">
         <!-- Header -->
-        <div class="header">
-            <h1>🔍 Text Mining & Sentiment Analysis</h1>
-            <p>CSI 5810 Project 2 - Product Review Analysis System</p>
-            <p style="margin-top: 10px; color: #999;">Upload reviews • Train models • Analyze sentiment • Visualize results</p>
-        </div>
-
-        <!-- Main Content -->
-        <div class="main-content">
-            <!-- Upload Section -->
-            <div class="card">
-                <h2>📤 Data Upload</h2>
-                <div class="upload-section">
-                    <p style="margin-bottom: 20px; color: #666;">Upload a CSV file with 'review_text' and 'rating' columns</p>
-                    <input type="file" id="fileInput" accept=".csv">
-                    <label for="fileInput" class="upload-label">Choose CSV File</label>
-                    <p id="fileName" style="margin-top: 15px; color: #667eea; font-weight: bold;"></p>
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-chart-line"></i> Sentiment Analysis Dashboard</h1>
+                <p>CSI 5810 - Text Mining Project | Automated Amazon Reviews Analysis</p>
+                <span class="header-tag">Real-time Machine Learning</span>
+            </div>
+            <div class="header-stats">
+                <div class="stat-item">
+                    <div class="stat-value" id="headerReviews">0</div>
+                    <div class="stat-label">Reviews</div>
                 </div>
-                <button class="btn" onclick="uploadFile()" style="margin-top: 20px; width: 100%;">Upload & Preprocess Data</button>
-                <button class="btn btn-secondary" onclick="downloadSample()" style="width: 100%;">Download Sample CSV</button>
+                <div class="stat-item">
+                    <div class="stat-value" id="headerPositive">0</div>
+                    <div class="stat-label">Positive</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value" id="headerNegative">0</div>
+                    <div class="stat-label">Negative</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="main-grid">
+            <!-- Data Loading Card -->
+            <div class="card data-loading-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-database"></i> Data Source</h2>
+                    <i class="fas fa-file-csv" style="color: var(--accent); font-size: 1.5rem;"></i>
+                </div>
+                
+                <div class="file-info">
+                    <div class="file-name">amazon_reviews_prepared.csv</div>
+                    <div class="file-path" id="filePath">Checking file...</div>
+                </div>
+                
+                <button class="btn btn-primary btn-full" onclick="autoLoadData()" id="loadBtn">
+                    <i class="fas fa-cloud-upload-alt"></i> Load & Preprocess Data
+                </button>
                 
                 <div id="uploadAlert"></div>
                 <div id="loadingUpload" class="loading">
                     <div class="spinner"></div>
-                    <p>Processing data...</p>
+                    <p>Processing your data...</p>
                 </div>
             </div>
 
-            <!-- Statistics Section -->
-            <div class="card">
-                <h2>📊 Dataset Statistics</h2>
+            <!-- Statistics Card -->
+            <div class="card stats-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-bar"></i> Dataset Overview</h2>
+                    <i class="fas fa-chart-pie" style="color: var(--success); font-size: 1.5rem;"></i>
+                </div>
+                
                 <div id="statsContent">
-                    <p style="text-align: center; color: #999; padding: 40px;">Upload data to view statistics</p>
+                    <p style="text-align: center; color: var(--gray); padding: 3rem;">Load data to view statistics</p>
                 </div>
             </div>
 
-            <!-- Training Section -->
-            <div class="card">
-                <h2>🤖 Model Training</h2>
-                <p style="color: #666; margin-bottom: 20px;">Train multiple machine learning models for sentiment classification</p>
-                <button class="btn" onclick="trainModels()" id="trainBtn" disabled style="width: 100%;">Train All Models</button>
+            <!-- Training Card -->
+            <div class="card training-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-robot"></i> Model Training</h2>
+                    <i class="fas fa-brain" style="color: var(--secondary); font-size: 1.5rem;"></i>
+                </div>
+                
+                <p style="color: var(--gray); margin-bottom: 1.5rem;">Train multiple ML algorithms for sentiment classification</p>
+                
+                <button class="btn btn-secondary btn-full" onclick="trainModels()" id="trainBtn" disabled>
+                    <i class="fas fa-play-circle"></i> Train All Models
+                </button>
+                
                 <div id="trainAlert"></div>
                 <div id="loadingTrain" class="loading">
                     <div class="spinner"></div>
-                    <p>Training models... This may take a minute...</p>
+                    <p>Training models... This may take a moment</p>
                 </div>
             </div>
 
-            <!-- Results Section -->
-            <div class="card">
-                <h2>📈 Model Performance</h2>
+            <!-- Results Card -->
+            <div class="card results-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-trophy"></i> Model Performance</h2>
+                    <i class="fas fa-medal" style="color: var(--warning); font-size: 1.5rem;"></i>
+                </div>
+                
                 <div id="resultsContent">
-                    <p style="text-align: center; color: #999; padding: 40px;">Train models to view results</p>
+                    <p style="text-align: center; color: var(--gray); padding: 3rem;">Train models to view performance metrics</p>
                 </div>
             </div>
 
-            <!-- Prediction Section -->
-            <div class="card full-width">
-                <h2>🎯 Real-time Prediction</h2>
-                <div class="predict-section">
-                    <textarea id="reviewText" placeholder="Enter a product review here to predict sentiment..."></textarea>
-                    <button class="btn" onclick="predictSentiment()" id="predictBtn" disabled style="margin-top: 15px;">Predict Sentiment</button>
-                    <div id="predictionResult"></div>
+            <!-- Prediction Card -->
+            <div class="card prediction-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-bolt"></i> Live Sentiment Analysis</h2>
+                    <i class="fas fa-comment-alt" style="color: var(--accent); font-size: 1.5rem;"></i>
                 </div>
+                
+                <textarea 
+                    id="reviewText" 
+                    class="prediction-input" 
+                    placeholder="✍️ Enter a product review here to analyze its sentiment in real-time..."></textarea>
+                
+                <div style="display: flex; gap: 15px;">
+                    <button class="btn btn-accent" onclick="predictSentiment()" id="predictBtn" disabled>
+                        <i class="fas fa-search"></i> Analyze Sentiment
+                    </button>
+                    <button class="btn" onclick="clearPrediction()" style="background: var(--gray-light); color: var(--dark);">
+                        <i class="fas fa-eraser"></i> Clear
+                    </button>
+                </div>
+                
+                <div id="predictionResult"></div>
             </div>
 
-            <!-- Visualizations Section -->
-            <div class="card full-width">
-                <h2>📊 Visualizations</h2>
-                <button class="btn btn-secondary" onclick="generateVisualizations()" id="vizBtn" disabled>Generate All Visualizations</button>
+            <!-- Visualizations Card -->
+            <div class="card visualizations-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-chart-area"></i> Data Visualizations</h2>
+                    <i class="fas fa-images" style="color: var(--primary); font-size: 1.5rem;"></i>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="generateVisualizations()" id="vizBtn" disabled>
+                    <i class="fas fa-chart-line"></i> Generate Visualizations
+                </button>
+                
                 <div id="loadingViz" class="loading">
                     <div class="spinner"></div>
-                    <p>Generating visualizations...</p>
+                    <p>Creating beautiful visualizations...</p>
                 </div>
+                
                 <div id="visualizationsContent"></div>
             </div>
 
-            <!-- Feature Importance Section -->
-            <div class="card full-width">
-                <h2>🔑 Feature Importance (Top Words)</h2>
-                <button class="btn btn-secondary" onclick="getFeatureImportance()" id="featureBtn" disabled>Show Important Features</button>
+            <!-- Features Card -->
+            <div class="card features-card">
+                <div class="card-header">
+                    <h2 class="card-title"><i class="fas fa-key"></i> Key Insights</h2>
+                    <i class="fas fa-lightbulb" style="color: var(--success); font-size: 1.5rem;"></i>
+                </div>
+                
+                <button class="btn btn-secondary" onclick="getFeatureImportance()" id="featureBtn" disabled>
+                    <i class="fas fa-chart-bar"></i> Show Feature Importance
+                </button>
+                
                 <div id="featureContent"></div>
             </div>
         </div>
+
+        <footer class="footer">
+            <p>CSI 5810 Text Mining Project | Sentiment Analysis System | © 2025</p>
+            <p style="margin-top: 5px; font-size: 0.8rem;">
+                <i class="fas fa-code"></i> Built with Flask, Scikit-learn & NLTK
+            </p>
+        </footer>
     </div>
 
     <script>
-        // Display selected file name
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const fileName = e.target.files[0]?.name || '';
-            document.getElementById('fileName').textContent = fileName ? `Selected: ${fileName}` : '';
+        // On page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkFileStatus();
+            
+            // Check if data was auto-loaded from Flask (read from data- attributes to avoid raw Jinja in JS)
+            const autoLoaded = (function() {
+                try {
+                    const v = document.body.getAttribute('data-auto-loaded');
+                    return v ? JSON.parse(v) : false;
+                } catch (e) {
+                    return false;
+                }
+            })();
+            const initialStats = (function() {
+                try {
+                    const v = document.body.getAttribute('data-initial-stats');
+                    return v ? JSON.parse(v) : null;
+                } catch (e) {
+                    return null;
+                }
+            })();
+            
+            if (autoLoaded && initialStats) {
+                showAlert('uploadAlert', '<i class="fas fa-check-circle"></i> Data loaded successfully on startup!', 'success');
+                displayStats(initialStats);
+                updateHeaderStats(initialStats);
+                document.getElementById('trainBtn').disabled = false;
+            }
         });
 
-        // Upload and preprocess data
-        async function uploadFile() {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                showAlert('uploadAlert', 'Please select a file first!', 'error');
-                return;
+        async function checkFileStatus() {
+            try {
+                const response = await fetch('/check-file');
+                const data = await response.json();
+                
+                const filePathDiv = document.getElementById('filePath');
+                if (data.file_exists) {
+                    filePathDiv.innerHTML = `<i class="fas fa-check-circle" style="color: var(--success);"></i> ${data.file_path}`;
+                    filePathDiv.style.color = 'var(--success)';
+                } else {
+                    filePathDiv.innerHTML = `<i class="fas fa-exclamation-circle" style="color: var(--danger);"></i> File not found in current directory`;
+                    filePathDiv.style.color = 'var(--danger)';
+                }
+            } catch (error) {
+                document.getElementById('filePath').innerHTML = `<i class="fas fa-exclamation-triangle" style="color: var(--warning);"></i> Error checking file status`;
+                document.getElementById('filePath').style.color = 'var(--warning)';
             }
+        }
 
-            const formData = new FormData();
-            formData.append('file', file);
+        // Update header stats
+        function updateHeaderStats(stats) {
+            document.getElementById('headerReviews').textContent = stats.total_reviews;
+            document.getElementById('headerPositive').textContent = stats.positive_reviews;
+            document.getElementById('headerNegative').textContent = stats.negative_reviews;
+        }
 
+        // Auto load data from local file
+        async function autoLoadData() {
+            const loadBtn = document.getElementById('loadBtn');
+            const originalText = loadBtn.innerHTML;
+            
+            loadBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            loadBtn.disabled = true;
+            
             document.getElementById('loadingUpload').style.display = 'block';
             document.getElementById('uploadAlert').innerHTML = '';
 
             try {
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-
+                const response = await fetch('/auto-load');
                 const data = await response.json();
 
                 if (data.success) {
-                    showAlert('uploadAlert', data.message, 'success');
+                    showAlert('uploadAlert', `<i class="fas fa-check-circle"></i> ${data.message}`, 'success');
                     displayStats(data.stats);
+                    updateHeaderStats(data.stats);
                     document.getElementById('trainBtn').disabled = false;
+                    
+                    // Update button
+                    loadBtn.innerHTML = '<i class="fas fa-check-circle"></i> Data Loaded';
+                    loadBtn.classList.remove('btn-primary');
+                    loadBtn.classList.add('btn-secondary');
                 } else {
-                    showAlert('uploadAlert', data.error, 'error');
+                    showAlert('uploadAlert', `<i class="fas fa-exclamation-circle"></i> ${data.error}`, 'error');
+                    loadBtn.innerHTML = originalText;
+                    loadBtn.disabled = false;
                 }
             } catch (error) {
-                showAlert('uploadAlert', 'Error uploading file: ' + error, 'error');
+                showAlert('uploadAlert', `<i class="fas fa-exclamation-triangle"></i> Error loading file: ${error}`, 'error');
+                loadBtn.innerHTML = originalText;
+                loadBtn.disabled = false;
             } finally {
                 document.getElementById('loadingUpload').style.display = 'none';
             }
         }
 
         // Display statistics
-        function displayStats(stats) {
-            const html = `
-                <div class="stats-grid">
-                    <div class="stat-box">
-                        <div class="number">${stats.total_reviews}</div>
-                        <div class="label">Total Reviews</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="number">${stats.positive_reviews}</div>
-                        <div class="label">Positive Reviews</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="number">${stats.negative_reviews}</div>
-                        <div class="label">Negative Reviews</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="number">${stats.avg_word_count.toFixed(1)}</div>
-                        <div class="label">Avg Words/Review</div>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9ff; border-radius: 10px;">
-                    <strong>Rating Distribution:</strong><br>
-                    ${Object.entries(stats.rating_distribution).map(([rating, count]) => 
-                        `⭐ ${rating}-star: ${count} reviews`
-                    ).join('<br>')}
-                </div>
-            `;
-            document.getElementById('statsContent').innerHTML = html;
-        }
+                function displayStats(stats) {
+                    const html = `
+                        <div>
+                            <div class="stats-grid">
+                                <div class="stat-box">
+                                    <div class="value">${stats.total_reviews}</div>
+                                    <div class="label">Total Reviews</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="value">${stats.positive_reviews}</div>
+                                    <div class="label">Positive</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="value">${stats.negative_reviews}</div>
+                                    <div class="label">Negative</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="value">${stats.avg_word_count.toFixed(1)}</div>
+                                    <div class="label">Avg Words</div>
+                                </div>
+                            </div>
+                            <div style="margin-top: 1.5rem; padding: 1.2rem; background: var(--gray-light); border-radius: 10px;">
+                                <h4 style="color: var(--dark); margin-bottom: 10px;"><i class="fas fa-star"></i> Rating Distribution</h4>
+                                ${Object.entries(stats.rating_distribution).map(([rating, count]) => 
+                                    '<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.05);">' +
+                                        '<span>' + '⭐'.repeat(rating) + ' (' + rating + '-star)</span>' +
+                                        '<span style="font-weight: 600;">' + count + ' reviews</span>' +
+                                    '</div>'
+                                ).join('')}
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('statsContent').innerHTML = html;
+                }
 
         // Train models
         async function trainModels() {
+            const trainBtn = document.getElementById('trainBtn');
+            const originalText = trainBtn.innerHTML;
+            
+            trainBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Training...';
+            trainBtn.disabled = true;
+            
             document.getElementById('loadingTrain').style.display = 'block';
             document.getElementById('trainAlert').innerHTML = '';
 
@@ -509,16 +916,25 @@
                 const data = await response.json();
 
                 if (data.success) {
-                    showAlert('trainAlert', data.message, 'success');
+                    showAlert('trainAlert', `<i class="fas fa-check-circle"></i> ${data.message}`, 'success');
                     displayResults(data.results);
                     document.getElementById('predictBtn').disabled = false;
                     document.getElementById('vizBtn').disabled = false;
                     document.getElementById('featureBtn').disabled = false;
+                    
+                    // Update button
+                    trainBtn.innerHTML = '<i class="fas fa-check-circle"></i> Models Trained';
+                    trainBtn.classList.remove('btn-secondary');
+                    trainBtn.classList.add('btn-accent');
                 } else {
-                    showAlert('trainAlert', data.error, 'error');
+                    showAlert('trainAlert', `<i class="fas fa-exclamation-circle"></i> ${data.error}`, 'error');
+                    trainBtn.innerHTML = originalText;
+                    trainBtn.disabled = false;
                 }
             } catch (error) {
-                showAlert('trainAlert', 'Error training models: ' + error, 'error');
+                showAlert('trainAlert', `<i class="fas fa-exclamation-triangle"></i> Error training models: ${error}`, 'error');
+                trainBtn.innerHTML = originalText;
+                trainBtn.disabled = false;
             } finally {
                 document.getElementById('loadingTrain').style.display = 'none';
             }
@@ -527,25 +943,25 @@
         // Display results
         function displayResults(results) {
             const html = `
-                <div class="results-grid">
+                <div class="model-results">
                     ${Object.entries(results).map(([model, metrics]) => `
-                        <div class="result-card">
-                            <h3>${model}</h3>
-                            <div class="metric">
+                        <div class="model-card">
+                            <div class="model-name">${model}</div>
+                            <div class="model-metric">
                                 <span class="metric-name">Accuracy:</span>
-                                <span class="metric-value">${(metrics.accuracy * 100).toFixed(2)}%</span>
+                                <span class="metric-value" style="color: var(--primary);">${(metrics.accuracy * 100).toFixed(1)}%</span>
                             </div>
-                            <div class="metric">
+                            <div class="model-metric">
                                 <span class="metric-name">Precision:</span>
-                                <span class="metric-value">${(metrics.precision * 100).toFixed(2)}%</span>
+                                <span class="metric-value" style="color: var(--success);">${(metrics.precision * 100).toFixed(1)}%</span>
                             </div>
-                            <div class="metric">
+                            <div class="model-metric">
                                 <span class="metric-name">Recall:</span>
-                                <span class="metric-value">${(metrics.recall * 100).toFixed(2)}%</span>
+                                <span class="metric-value" style="color: var(--warning);">${(metrics.recall * 100).toFixed(1)}%</span>
                             </div>
-                            <div class="metric">
+                            <div class="model-metric">
                                 <span class="metric-name">F1-Score:</span>
-                                <span class="metric-value">${(metrics.f1_score * 100).toFixed(2)}%</span>
+                                <span class="metric-value" style="color: var(--accent);">${(metrics.f1_score * 100).toFixed(1)}%</span>
                             </div>
                         </div>
                     `).join('')}
@@ -559,9 +975,14 @@
             const reviewText = document.getElementById('reviewText').value;
             
             if (!reviewText.trim()) {
-                alert('Please enter a review text!');
+                showAlert('predictionResult', '<i class="fas fa-exclamation-circle"></i> Please enter a review text!', 'error');
                 return;
             }
+
+            const predictBtn = document.getElementById('predictBtn');
+            const originalText = predictBtn.innerHTML;
+            predictBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+            predictBtn.disabled = true;
 
             try {
                 const response = await fetch('/predict', {
@@ -577,23 +998,35 @@
                 if (data.success) {
                     displayPrediction(data.predictions);
                 } else {
-                    alert('Error: ' + data.error);
+                    showAlert('predictionResult', `<i class="fas fa-exclamation-circle"></i> ${data.error}`, 'error');
                 }
             } catch (error) {
-                alert('Error predicting sentiment: ' + error);
+                showAlert('predictionResult', `<i class="fas fa-exclamation-triangle"></i> Error: ${error}`, 'error');
+            } finally {
+                predictBtn.innerHTML = originalText;
+                predictBtn.disabled = false;
             }
+        }
+
+        // Clear prediction
+        function clearPrediction() {
+            document.getElementById('reviewText').value = '';
+            document.getElementById('predictionResult').innerHTML = '';
         }
 
         // Display prediction
         function displayPrediction(predictions) {
             const html = `
-                <div class="prediction-result">
-                    <h3 style="color: #667eea; margin-bottom: 15px;">Prediction Results:</h3>
+                <div class="prediction-results">
                     ${Object.entries(predictions).map(([model, pred]) => `
-                        <div style="margin: 10px 0; padding: 10px; background: white; border-radius: 5px;">
-                            <strong>${model}:</strong>
-                            <span class="sentiment-${pred.sentiment.toLowerCase()}">${pred.sentiment}</span>
-                            ${pred.confidence ? ` (Confidence: ${(pred.confidence * 100).toFixed(1)}%)` : ''}
+                        <div class="prediction-item">
+                            <div class="prediction-model">${model}</div>
+                            <div class="prediction-sentiment ${pred.sentiment === 'Positive' ? 'sentiment-positive' : 'sentiment-negative'}">
+                                ${pred.sentiment === 'Positive' ? '😊 Positive' : '😠 Negative'}
+                            </div>
+                            ${pred.confidence ? 
+                                `<div class="prediction-confidence">Confidence: ${(pred.confidence * 100).toFixed(1)}%</div>` : 
+                                ''}
                         </div>
                     `).join('')}
                 </div>
@@ -603,6 +1036,11 @@
 
         // Generate visualizations
         async function generateVisualizations() {
+            const vizBtn = document.getElementById('vizBtn');
+            const originalText = vizBtn.innerHTML;
+            vizBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+            vizBtn.disabled = true;
+            
             document.getElementById('loadingViz').style.display = 'block';
             document.getElementById('visualizationsContent').innerHTML = '';
 
@@ -613,11 +1051,13 @@
                 if (data.success) {
                     displayVisualizations(data.plots);
                 } else {
-                    alert('Error: ' + data.error);
+                    showAlert('visualizationsContent', `<i class="fas fa-exclamation-circle"></i> ${data.error}`, 'error');
                 }
             } catch (error) {
-                alert('Error generating visualizations: ' + error);
+                showAlert('visualizationsContent', `<i class="fas fa-exclamation-triangle"></i> Error: ${error}`, 'error');
             } finally {
+                vizBtn.innerHTML = originalText;
+                vizBtn.disabled = false;
                 document.getElementById('loadingViz').style.display = 'none';
             }
         }
@@ -625,22 +1065,22 @@
         // Display visualizations
         function displayVisualizations(plots) {
             const plotOrder = [
-                { key: 'rating_dist', title: 'Rating Distribution' },
-                { key: 'model_comparison', title: 'Model Comparison' },
-                { key: 'wordcloud_positive', title: 'Positive Reviews Word Cloud' },
-                { key: 'wordcloud_negative', title: 'Negative Reviews Word Cloud' },
-                { key: 'confusion_matrices', title: 'Confusion Matrices', fullWidth: true },
-                { key: 'roc_curves', title: 'ROC Curves', fullWidth: true }
+                { key: 'rating_dist', title: '📊 Rating Distribution' },
+                { key: 'model_comparison', title: '📈 Model Comparison' },
+                { key: 'wordcloud_positive', title: '☁️ Positive Reviews Word Cloud' },
+                { key: 'wordcloud_negative', title: '☁️ Negative Reviews Word Cloud' },
+                { key: 'confusion_matrices', title: '🎯 Confusion Matrices', fullWidth: true },
+                { key: 'roc_curves', title: '📉 ROC Curves', fullWidth: true }
             ];
 
             const html = `
-                <div class="visualization-grid">
+                <div class="viz-grid">
                     ${plotOrder.map(plot => {
                         if (!plots[plot.key]) return '';
                         return `
-                            <div class="viz-card ${plot.fullWidth ? 'full-width' : ''}" style="${plot.fullWidth ? 'grid-column: 1 / -1;' : ''}">
-                                <h3>${plot.title}</h3>
-                                <img src="data:image/png;base64,${plots[plot.key]}" alt="${plot.title}">
+                            <div class="viz-item ${plot.fullWidth ? 'full' : ''}">
+                                <div class="viz-title">${plot.title}</div>
+                                <img src="data:image/png;base64,${plots[plot.key]}" class="viz-image" alt="${plot.title}">
                             </div>
                         `;
                     }).join('')}
@@ -651,6 +1091,11 @@
 
         // Get feature importance
         async function getFeatureImportance() {
+            const featureBtn = document.getElementById('featureBtn');
+            const originalText = featureBtn.innerHTML;
+            featureBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Loading...';
+            featureBtn.disabled = true;
+
             try {
                 const response = await fetch('/feature-importance');
                 const data = await response.json();
@@ -658,54 +1103,49 @@
                 if (data.success) {
                     displayFeatures(data.positive_features, data.negative_features);
                 } else {
-                    alert('Error: ' + data.error);
+                    showAlert('featureContent', `<i class="fas fa-exclamation-circle"></i> ${data.error}`, 'error');
                 }
             } catch (error) {
-                alert('Error getting features: ' + error);
+                showAlert('featureContent', `<i class="fas fa-exclamation-triangle"></i> Error: ${error}`, 'error');
+            } finally {
+                featureBtn.innerHTML = originalText;
+                featureBtn.disabled = false;
             }
         }
 
         // Display features
         function displayFeatures(positive, negative) {
             const html = `
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
-                    <div>
-                        <h3 style="color: #48bb78; margin-bottom: 15px;">✅ Top Positive Words</h3>
-                        <div class="feature-list">
-                            ${positive.map(f => `
-                                <div class="feature-item">
-                                    <span>${f.word}</span>
-                                    <span style="color: #48bb78; font-weight: bold;">${f.importance.toFixed(4)}</span>
-                                </div>
-                            `).join('')}
+                <div class="feature-list">
+                    <h4 style="color: var(--success); margin-bottom: 10px;"><i class="fas fa-thumbs-up"></i> Top Positive Words</h4>
+                    ${positive.slice(0, 10).map(f => `
+                        <div class="feature-item positive">
+                            <span class="feature-word">${f.word}</span>
+                            <span class="feature-importance">+${f.importance.toFixed(4)}</span>
                         </div>
-                    </div>
-                    <div>
-                        <h3 style="color: #f56565; margin-bottom: 15px;">❌ Top Negative Words</h3>
-                        <div class="feature-list">
-                            ${negative.map(f => `
-                                <div class="feature-item negative">
-                                    <span>${f.word}</span>
-                                    <span style="color: #f56565; font-weight: bold;">${f.importance.toFixed(4)}</span>
-                                </div>
-                            `).join('')}
+                    `).join('')}
+                    
+                    <h4 style="color: var(--danger); margin: 20px 0 10px;"><i class="fas fa-thumbs-down"></i> Top Negative Words</h4>
+                    ${negative.slice(0, 10).map(f => `
+                        <div class="feature-item negative">
+                            <span class="feature-word">${f.word}</span>
+                            <span class="feature-importance">${f.importance.toFixed(4)}</span>
                         </div>
-                    </div>
+                    `).join('')}
                 </div>
             `;
             document.getElementById('featureContent').innerHTML = html;
         }
 
-        // Download sample CSV
-        function downloadSample() {
-            window.location.href = '/download-sample';
-        }
-
         // Show alert
         function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
             const alertClass = type === 'success' ? 'alert-success' : type === 'error' ? 'alert-error' : 'alert-info';
-            document.getElementById(elementId).innerHTML = `
-                <div class="alert ${alertClass}">${message}</div>
+            
+            alertDiv.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
             `;
         }
     </script>
